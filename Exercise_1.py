@@ -97,9 +97,10 @@ def MillionDirectories(dna,proteins):
 
 def main():
     FASTAfu = OpenFile()
+    fasta_filename = FASTAfu.name
     
     # Use sed to extract unique sampling dates
-    unique_dates_process = subprocess.run(['sed', 's/Sample\([0-9]*\)_\([0-9]*-[A-Za-z]*\) \([0-9]*\) \([a-z]*\)/\2 /', FASTAfu], capture_output=True, text=True)
+    unique_dates_process = subprocess.run(['sed', 's/Sample\([0-9]*\)_\([0-9]*-[A-Za-z]*\) \([0-9]*\) \([a-z]*\)/\2 /', fasta_filename], capture_output=True, text=True)
     unique_dates = unique_dates_process.stdout.strip()
 
     sequences, dates = FindDNA(FASTAfu)
