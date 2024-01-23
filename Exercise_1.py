@@ -3,6 +3,8 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 import sys
 import os
+import subprocess
+
 
 #Opening FASTA file and returning open file for use later.
 def OpenFile():
@@ -95,28 +97,29 @@ def MillionDirectories(dna,proteins):
 
 def main():
     FASTAfu = OpenFile()
+    
+    # Use sed to extract unique sampling dates
+    unique_dates_process = subprocess.run(['sed', 's/Sample\([0-9]*\)_\([0-9]*-[A-Za-z]*\) \([0-9]*\) \([a-z]*\)/\2 /', FASTAfu], capture_output=True, text=True)
+    unique_dates = unique_dates_process.stdout.strip()
+
     sequences, dates = FindDNA(FASTAfu)
     totalsamples = str(Samples(sequences))
-    unique_dates = UniqueDates(dates)
+    num_dates = UniqueDates(unique_dates)
     SNPs = findingSNP(sequences)
     Proteins = makingProteins(sequences)
     proteinSNP = findingSNP(Proteins)
-    
-    
-    
+
     with open("log.txt", "w") as new_file:
         new_file.write(f"Total samples: {totalsamples}\n")
-        new_file.write(f"Unique sampling dates: {unique_dates}\n")
+        new_file.write(f"Unique sampling dates: {num_dates}\n")
         new_file.write(f"Your FASTA file contains:\n")
         new_file.write(f"     DNA variable sites:{SNPs}\n")
         new_file.write(f"     Protein variable sites:{proteinSNP}")
 
-    protesFASTA(Proteins,dates)
-    MillionDirectories(sequences,Proteins)
-    
-    FASTAfu.close()
+    protesFASTA(Proteins, dates)
+    MillionDirectories(sequences, Proteins)
 
-    
+    FASTAfu.close()
 
 if __name__ == "__main__":
     main()
