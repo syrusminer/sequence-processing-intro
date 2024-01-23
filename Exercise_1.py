@@ -34,10 +34,16 @@ def Samples(theseqs):
     return {ttlsamples}
 
 #Counting unique dates
-def UniqueDates(dates):
-    uqdates = set(dates.values())
-    thenumber_ofuniquedates = len(uqdates)
-    return thenumber_ofuniquedates
+def UniqueDates(dates_str):
+    dates = dates_str.split()
+    unique_dates = set()
+    for date in dates:
+        stripped_date = date.strip()
+        if stripped_date:
+            unique_dates.add(stripped_date)
+    num_unique_dates = len(unique_dates)
+
+    return num_unique_dates
 
 #This one is creating a list for every position.
 #At each position it turns the list into a set, if the
