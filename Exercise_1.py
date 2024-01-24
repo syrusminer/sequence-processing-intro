@@ -3,8 +3,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 import sys
 import os
-import subprocess
-
+import re
 
 #Opening FASTA file and returning open file for use later.
 def OpenFile():
@@ -34,15 +33,11 @@ def Samples(theseqs):
     return {ttlsamples}
 
 #Counting unique dates
-def UniqueDates(dates_str):
-    dates = dates_str.split()
-    unique_dates = set()
-    for date in dates:
-        stripped_date = date.strip()
-        if stripped_date:
-            unique_dates.add(stripped_date)
+def UniqueDates(dates):
+    date_pattern = r'Sample\d+_(\d{1,2}-[A-Za-z]+)'
+    extracted_dates = re.findall(date_pattern, ' '.join(dates.values()))
+    unique_dates = set(extracted_dates)
     num_unique_dates = len(unique_dates)
-
     return num_unique_dates
 
 #This one is creating a list for every position.
@@ -103,30 +98,28 @@ def MillionDirectories(dna,proteins):
 
 def main():
     FASTAfu = OpenFile()
-    fasta_filename = FASTAfu.name
-    
-    # Use sed to extract unique sampling dates
-    unique_dates_process = subprocess.run(['sed', 's/Sample\([0-9]*\)_\([0-9]*-[A-Za-z]*\) \([0-9]*\) \([a-z]*\)/\2 /', fasta_filename], capture_output=True, text=True)
-    unique_dates = unique_dates_process.stdout.strip()
-
     sequences, dates = FindDNA(FASTAfu)
     totalsamples = str(Samples(sequences))
-    num_dates = UniqueDates(unique_dates)
+    unique_dates = UniqueDates(dates)
     SNPs = findingSNP(sequences)
     Proteins = makingProteins(sequences)
     proteinSNP = findingSNP(Proteins)
 
+
+
     with open("log.txt", "w") as new_file:
         new_file.write(f"Total samples: {totalsamples}\n")
-        new_file.write(f"Unique sampling dates: {num_dates}\n")
+        new_file.write(f"Unique sampling dates: {unique_dates}\n")
         new_file.write(f"Your FASTA file contains:\n")
         new_file.write(f"     DNA variable sites:{SNPs}\n")
         new_file.write(f"     Protein variable sites:{proteinSNP}")
 
-    protesFASTA(Proteins, dates)
-    MillionDirectories(sequences, Proteins)
+    protesFASTA(Proteins,dates)
+    MillionDirectories(sequences,Proteins)
 
     FASTAfu.close()
+
+
 
 if __name__ == "__main__":
     main()
